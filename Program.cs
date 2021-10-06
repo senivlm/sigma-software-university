@@ -86,6 +86,7 @@ namespace home1
         }
         public double weight;
     }
+    //-------------------------------------------------------------------------------------------------------------------------------------------------
     class Meat : Product
     {
         public Meat(string name, double cost, double weight, string category, string type)
@@ -114,6 +115,7 @@ namespace home1
                Cost + ", weight= " + weight + ", category= " + category + ", type= " + type + "\n");
         }
     }
+    //-----------------------------------------------------------------------------------------------------------------------------------------------------
     class Dairy_products : Product
     {
         
@@ -127,6 +129,7 @@ namespace home1
             cost *= percent - expireDays.Days / 10;
         }
     }
+    //----------------------------------------------------------------------------------------------------------------------------------------------
     class Storage
     {
         public Product[] arrProduct;
@@ -234,6 +237,7 @@ namespace home1
             }
         }
     }
+    //--------------------------------------------------------------------------------------------------------------------------------------
     class Buy
     {
         public Buy(int amount, int cost, double weigth = 1)
@@ -264,6 +268,7 @@ namespace home1
             Console.WriteLine("cost = " + cost + ", weight= " + weight + ", amount= " + amount + "\n");
         }
     }
+    //---------------------------------------------------------------------------------------------------------------------------------------------------
    sealed class Check
     {
         public static string getInfoProduct(in Product item)
@@ -279,6 +284,7 @@ namespace home1
              
         }
     }
+    //---------------------------------------------------------------------------------------------------------------------------------------------------
     enum Month:byte
     {
         January=1,
@@ -299,6 +305,7 @@ namespace home1
     {
         first=1,second,third,fourth
     }
+    //---------------------------------------------------------------------------------------------------------------------------------------------
    class Electricity
    {
         Month[] quaterMonths;
@@ -361,6 +368,7 @@ namespace home1
             return indicatorsOut[2] - indicatorsIn[0];
         }
     }
+    //-----------------------------------------------------------------------------------------------------------------------------------------------------
     class ElectricityList
     {
         Electricity[] arrElecricityAccount;
@@ -401,16 +409,12 @@ namespace home1
                         arrElecricityAccount[i] = new Electricity(quater, lName, room, inIndicators, outIndicator);
 
                     }
-
                 }
                 else
                 {
                     throw new Exception("Uncorect file\n");
                 }
-            }
-
-            
-          
+            }   
         }
         public Electricity this[int index]
         {
@@ -442,8 +446,7 @@ namespace home1
             int indexMaxDebt = 0;
             for(int i = 0; i < arrElecricityAccount.Length; i++)
             {
-                
-                    currentPersonDept = arrElecricityAccount[i].getUsedElectricity();
+                currentPersonDept = arrElecricityAccount[i].getUsedElectricity();
                 
                 if (currentPersonDept > maxDebt)
                 {
@@ -454,8 +457,7 @@ namespace home1
             return arrElecricityAccount[indexMaxDebt].ToString();
         }
         public uint getRoomUnused()
-        {
-            
+        {     
             for(int i = 0; i < arrElecricityAccount.Length; i++)
             {
                 if (arrElecricityAccount[i].getUsedElectricity()==0)
@@ -465,8 +467,8 @@ namespace home1
             }
             return 0;
         }
-
     }
+    //--------------------------------------------------------------------------------------------------------------------------------------------
     class MagicSquare
     {
         int size;
@@ -541,7 +543,7 @@ namespace home1
             {
                 for(int j = size / 2; j < 2 * size - 1 - size / 2; j++)
                 {
-                    square += matr[i][j]+" ";
+                     square +=$"{matr[i][j],-5}";
                 }
                 square += "\n";
             }
@@ -549,23 +551,8 @@ namespace home1
         }
     }
    
-        
-        public override string ToString()
-        {
-            string square = "";
-            for(int i = 0; i < matr.Length; ++i)
-            {
-                for(int j = 0; j < matr[i].Length; ++j)
-                {
-                    square += matr[i][j]+" ";
-                }
-                square += "\n";
-            }
-            return square;
-        }
-    }
-
-    class Polynomial
+ //-------------------------------------------------------------------------------------------------------------------------------------------------------       
+   class Polynomial
     {
         double[] cIndex;
         int polinomDegree;
@@ -627,6 +614,7 @@ namespace home1
             int size, firstSize = first.polinomDegree,
                 secondSize = second.polinomDegree;
             Polynomial bigger;
+            double sign = 1;
             if (firstSize > secondSize)
             {
                 size = firstSize;
@@ -636,6 +624,7 @@ namespace home1
             {
                 bigger = second;
                 size = secondSize;
+                sign = -1;
             }
             Polynomial result = new Polynomial(size);
             ++firstSize; ++secondSize;
@@ -646,9 +635,36 @@ namespace home1
             }
             for (int i = size + 1; i < bigger.polinomDegree + 1; i++)
             {
-                result[i] =- bigger[i];
+                result[i] =sign* bigger[i];
             }
 
+            return result;
+
+        }
+        public static Polynomial operator*(in Polynomial first, in Polynomial second)
+        {
+            Polynomial result;
+            if (first.polinomDegree > second.polinomDegree)
+            {
+                result = new Polynomial(second.polinomDegree);
+            }
+            else
+            {
+                result = new Polynomial(first.polinomDegree);
+            }
+            double newIndex = 0;
+            for(int i = 0; i < result.cIndex.Length; i++)
+            {
+                newIndex = 0;
+                if (first.cIndex[i] != 0)
+                {
+                    for(int j = 0; j < result.cIndex.Length; j++)
+                    {
+                        newIndex += first.cIndex[i] * second.cIndex[j];
+                    }
+                }
+                result.cIndex[i] = newIndex;
+            }
             return result;
 
         }
@@ -669,8 +685,8 @@ namespace home1
                 throw new FormatException("Invalid parameters\n");
             }
             
-            int size = int.Parse(sMonomial[1]);
-            if (size > polinomDegree + 1) { cIndex = new double[size]; }
+            int tempDeegre = int.Parse(sMonomial[1]);
+            if (tempDeegre > polinomDegree ) { cIndex = new double[tempDeegre + 1];polinomDegree = tempDeegre; }
             cIndex[0] = double.Parse(monomial[0]);
             char[] separatorMult = new char[] { '*' };
             int curDeegre;
@@ -716,7 +732,7 @@ namespace home1
         }
     }
 
-
+//--------------------------------------------------------------------------------------------------------------------------------------------
     class Program
     {
         static void Main(string[] args)
@@ -737,9 +753,15 @@ namespace home1
               }
               */
 
-
-            ElectricityList electricityList = new ElectricityList(@"ElectricityAccounts");
-            Console.WriteLine(electricityList);
+            /*  try
+              {
+                   ElectricityList electricityList = new ElectricityList(@"ElectricityAccounts");
+                   Console.WriteLine(electricityList);
+              }catch(Exception ex)
+              {
+                  Console.WriteLine(ex.Message);
+              }*/
+           
 
            /* Polynomial p = new Polynomial(3);
             Polynomial p2 = new Polynomial(5);
@@ -754,6 +776,8 @@ namespace home1
             {
                 Console.WriteLine(ex.Message);
             }*/
+             MagicSquare m = new MagicSquare(7);
+            Console.WriteLine(m);
 
         }
         
