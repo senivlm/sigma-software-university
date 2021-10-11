@@ -1,0 +1,466 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.IO;
+
+namespace home1
+{
+   
+    class Matrix: IEnumerable
+    {
+        int[,] matrix;
+        int rows, columns;
+        public Matrix(int rows,int columns)
+        {
+            matrix = new int[rows, columns];
+            this.columns = columns;
+            this.rows = rows;
+        }
+        public void randInput()
+        {
+            Random random = new Random();
+            for (int i = 0; i < rows; ++i)
+            {
+                for (int j = 0; j < columns; ++j)
+                {
+                    matrix[i, j] = random.Next(-10, 10);
+                }
+            }
+
+        }
+        public void randInput(int min,int max)
+        {
+            Random random = new Random();
+            for (int i = 0; i < rows; ++i)
+            {
+                for (int j = 0; j < columns; ++j)
+                {
+                    matrix[i, j] = random.Next(min, max);
+                }
+            }
+
+        }
+        public override string ToString()
+        {
+            StringBuilder text = new StringBuilder("");
+            for(int i = 0; i < rows; ++i)
+            {
+                for( int j = 0;j < columns; ++j)
+                {
+                    text.Append($"{matrix[i, j],-4}");
+                }
+                text.Append("\n");
+            }
+            return text.ToString();
+        }
+        public IEnumerator GetEnumerator()
+        {
+            return new Enumerator(matrix, rows, columns);
+        }
+    }
+
+    class Enumerator : IEnumerator<int>
+    {
+        int rows, columns;
+        int curRow, curCol;
+        int[,] matr;
+        public Enumerator(int [,] matr,int rows,int columns)
+        {
+            this.rows = rows;this.columns = columns;
+            this.matr = matr;
+            curRow = rows-1 ;curCol = columns ;
+        }
+        public int Current => matr[curRow,curCol];
+
+        object IEnumerator.Current => matr[curRow, curCol];
+
+        public void Dispose()
+        {
+            
+        }
+
+        public bool MoveNext()
+        {
+            if (curRow > 0)
+            {
+                if (curCol == 0) { --curRow;curCol = columns-1;
+                    Console.WriteLine();
+                }
+                else
+                {
+                    --curCol;
+                }
+            }else if (curRow == 0)
+            {
+                if (curCol == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    --curCol;
+                }
+            }
+            return true;
+        }
+
+        public void Reset()
+        {
+            curRow = rows -1; curCol = columns;
+        }
+    }
+    class weekStatistic
+    {
+        Dictionary<string, int> IRAdrees;
+        Dictionary<DayOfWeek, int> dayFreq;
+        DateTime[] times;
+        int[] hours = Enumerable.Repeat(0, 24).ToArray();
+        int amountEnters=0;
+        int count=8;
+       public  weekStatistic(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                string text = File.ReadAllText(fileName);
+                char[] sepators = { '\n' };
+                string[] lines= text.Split(sepators, StringSplitOptions.RemoveEmptyEntries);
+                sepators = new char[] { ' ', '.', ':' };
+                string[] words;
+                StringBuilder tempString = new StringBuilder() ;
+
+                times = new DateTime[lines.Length];
+                IRAdrees = new Dictionary<string, int>();
+                dayFreq = new Dictionary<DayOfWeek, int>();
+
+                DayOfWeek curDay; int value;
+                for(int i = 0; i < lines.Length; ++i)
+                {
+                    words = lines[i].Split(sepators);
+                    if (words.Length != count)
+                    {
+                        //waring for user
+                        Console.WriteLine($"The lines {i}  is not correct.\n");
+
+                    }
+                    else
+                    {
+                        if(IRAdrees.TryGetValue(words[0] + "." + words[1] +
+                            "." + words[2] + "." + words[3],out value)){
+                            IRAdrees[words[0] + "." + words[1] +
+                            "." + words[2] + "." + words[3]]++;
+                        }
+                        else
+                        {
+                            IRAdrees[words[0] + "." + words[1] +
+                            "." + words[2] + "." + words[3]] = 1;
+                        }
+                        try
+                        {
+                           times[amountEnters]= DateTime.Parse(words[4] + ":" + words[5] + ":" + words[6]);
+                            hours[times[amountEnters].Hour]++;
+                            if (Enum.TryParse(words[7], true, out curDay))
+                            {
+                                if (dayFreq.TryGetValue(curDay, out value))
+                                {
+                                    dayFreq[curDay]++;
+                                }
+                                else
+                                {
+                                    dayFreq[curDay] = 1;
+                                }
+                            }
+                            else
+                            {
+                                throw new FormatException($"Invaid format of day in {i} line\n");
+                            }
+                            amountEnters++;
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+
+
+                    }
+
+                }
+
+            }
+            else
+            {
+                throw new FileNotFoundException();
+            }
+        }
+        public override string ToString()
+        {
+            StringBuilder text = new StringBuilder();
+           foreach(var a in IRAdrees)
+            {
+                text.Append($"IRAdress  {a.Key,-20} visiting {a.Value}\n");
+            }
+            return text.ToString();
+        }
+
+        public int getCountVisit(string ir)
+        {
+            int value;
+            if (IRAdrees.TryGetValue(ir, out value))
+            {
+                return value;
+            }
+            else
+                return 0;
+        }
+        public DayOfWeek getPopularDay()
+        {
+            int max = 0;
+            DayOfWeek popular =(DayOfWeek)1;
+            foreach(var a in dayFreq)
+            {
+                if (a.Value > max)
+                {
+                    max = a.Value;
+                    popular = a.Key;
+                }
+            }
+            return popular;
+        }
+        public int getStartPopularHour()
+        {
+            int max = 0,populHour=-1;
+            for(int i=0;i<24;++i)
+            {
+                if (hours[i] > max)
+                {
+                    max = hours[i];
+                    populHour = i;
+
+                }
+            }
+            return populHour;
+        } 
+
+    }
+    class Polynomial
+        {
+            double[] cIndex;
+            int polinomDegree;
+            double x;
+            public Polynomial(int degree)
+            {
+                cIndex = new double[degree + 1];
+                polinomDegree = degree;
+
+            }
+            public double this[int index]
+            {
+                get => cIndex[index];
+                set
+                {
+                    if (index <= polinomDegree)
+                    {
+                        cIndex[index] = value;
+                    }
+                    else
+                    {
+                        Array.Resize(ref cIndex, index);
+                        cIndex[index] = value;
+                    }
+
+                }
+            }
+            public static Polynomial operator +(in Polynomial first, in Polynomial second)
+            {
+                int size, firstSize = first.polinomDegree,
+                    secondSize = second.polinomDegree;
+                Polynomial bigger;
+                if (firstSize > secondSize)
+                {
+                    size = firstSize;
+                    bigger = first;
+                }
+                else
+                {
+                    bigger = second;
+                    size = secondSize;
+                }
+                Polynomial result = new Polynomial(size);
+                ++firstSize; ++secondSize;
+                size -= Math.Abs(firstSize - secondSize);
+                for (int i = 0; i < size + 1; i++)
+                {
+                    result[i] = first[i] + second[i];
+                }
+                for (int i = size + 1; i < bigger.polinomDegree + 1; i++)
+                {
+                    result[i] = bigger[i];
+                }
+
+                return result;
+
+            }
+            public static Polynomial operator -(in Polynomial first, in Polynomial second)
+            {
+                int size, firstSize = first.polinomDegree,
+                    secondSize = second.polinomDegree;
+                Polynomial bigger;
+                double sign = 1;
+                if (firstSize > secondSize)
+                {
+                    size = firstSize;
+                    bigger = first;
+                }
+                else
+                {
+                    bigger = second;
+                    size = secondSize;
+                    sign = -1;
+                }
+                Polynomial result = new Polynomial(size);
+                ++firstSize; ++secondSize;
+                size -= Math.Abs(firstSize - secondSize);
+                for (int i = 0; i < size + 1; i++)
+                {
+                    result[i] = first[i] - second[i];
+                }
+                for (int i = size + 1; i < bigger.polinomDegree + 1; i++)
+                {
+                    result[i] = sign * bigger[i];
+                }
+
+                return result;
+
+            }
+            public static Polynomial operator *(in Polynomial first, in Polynomial second)
+            {
+                Polynomial result;
+                if (first.polinomDegree > second.polinomDegree)
+                {
+                    result = new Polynomial(second.polinomDegree);
+                }
+                else
+                {
+                    result = new Polynomial(first.polinomDegree);
+                }
+                double newIndex = 0;
+                for (int i = 0; i < result.cIndex.Length; i++)
+                {
+                    newIndex = 0;
+                    if (first.cIndex[i] != 0)
+                    {
+                        for (int j = 0; j < result.cIndex.Length; j++)
+                        {
+                            newIndex += first.cIndex[i] * second.cIndex[j];
+                        }
+                    }
+                    result.cIndex[i] = newIndex;
+                }
+                return result;
+
+            }
+            public void Parse(string s)
+            {
+                char[] separators = { '+' };
+                string[] monomial = s.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                if ((monomial.Length - 1 != s.Count(ch => ch == '^'))
+                    ||
+                    (monomial.Length - 1 != s.Count(ch => ch == '*')))
+                {
+                    throw new FormatException("Invalid parameters\n");
+                }
+                separators = new char[] { '^' };
+                string[] sMonomial = monomial[monomial.Length - 1].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                if (sMonomial.Length != 2)
+                {
+                    throw new FormatException("Invalid parameters\n");
+                }
+
+                int tempDeegre = int.Parse(sMonomial[1]);
+                if (tempDeegre > polinomDegree) { cIndex = new double[tempDeegre + 1]; polinomDegree = tempDeegre; }
+                cIndex[0] = double.Parse(monomial[0]);
+                char[] separatorMult = new char[] { '*' };
+                int curDeegre;
+
+                for (int i = 1; i < monomial.Length; i++)
+                {
+                    sMonomial = monomial[i].Split(separators, StringSplitOptions.RemoveEmptyEntries);
+                    if (sMonomial.Length != 2)
+                    {
+                        throw new FormatException("Invalid parameters\n");
+                    }
+                    curDeegre = int.Parse(sMonomial[1]);
+                    sMonomial = monomial[i].Split(separatorMult, StringSplitOptions.RemoveEmptyEntries);
+                    if (sMonomial.Length != 2)
+                    {
+                        throw new FormatException("Invalid parameters\n");
+                    }
+                    cIndex[curDeegre] = double.Parse(sMonomial[0]);
+                }
+
+            }
+            public override string ToString()
+            {
+                string res = "";
+                if (cIndex[0] != 0)
+                {
+                    res += cIndex[0];
+
+                }
+                for (int i = 1; i < polinomDegree + 1; i++)
+                {
+                    if (cIndex[i] != 0)
+                    {
+                        if (cIndex[i] > 0)
+                        {
+                            res += "+";
+                        }
+                        res += $" {cIndex[i]}*x^{i} ";
+
+                    }
+                }
+                return res;
+            }
+            public static implicit operator Polynomial(double a)
+            {
+            Polynomial retVal=new Polynomial(0);
+            retVal[0] = a;
+          
+            return retVal;
+            }
+           
+
+        }
+         class Program
+        {
+           static void Main(string[] args)
+           {
+            try
+            {
+                weekStatistic stat = new weekStatistic(@"siteVisits.txt");
+                Console.WriteLine(stat);
+                Console.WriteLine(stat.getPopularDay());
+                Console.WriteLine(stat.getStartPopularHour());
+            }catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            Matrix matrix = new Matrix(2, 3);
+            matrix.randInput();
+            Console.WriteLine(matrix);
+            foreach(int a in matrix)
+            {
+                Console.Write($"{a,-5}");
+            }
+
+
+         
+           }
+
+            
+
+
+        }
+}
