@@ -1,0 +1,63 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace colections
+{
+    static class changeWord
+    {
+        static Dictionary<string, string> vocabulary;
+        static changeWord() {
+            vocabulary = new Dictionary<string, string>();
+            vocabulary.Add("I", "He");
+            vocabulary.Add("go", "run");
+            vocabulary.Add("to", "to");
+            vocabulary.Add("school", "cinema");
+        }
+      public  static void change(ref string text)
+        {
+            string[] centences = text.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] words;
+            StringBuilder newSentences = new StringBuilder();
+            string newWordDef="";
+            for(int i = 0; i < centences.Length; ++i)
+            {
+                words = centences[i].Split();
+                for(int j = 0; j < words.Length; ++j)
+                {
+                    if (string.IsNullOrEmpty(words[j]))
+                    {
+                        newSentences.Append(" ");
+                    }
+                    else
+                    {
+                        if (!vocabulary.ContainsKey(words[j]))
+                        { 
+                            Console.WriteLine($"The word {words[j]} isn`t in the dictionary. Please, enter the definition to continue ");
+                            newWordDef=Console.ReadLine();
+                            vocabulary[words[j]] = newWordDef;
+                        }
+                        newSentences.Append(vocabulary[words[j]] + " ");
+                    }
+                }
+                newSentences.Remove(newSentences.Length - 1,1);
+                newSentences.Append(".");
+            }
+            text = newSentences.ToString();
+        }
+
+
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            string str = "I go to school. Girl runs to school";
+
+            changeWord.change(ref str);
+            Console.WriteLine(str);
+            }
+         }
+}
