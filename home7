@@ -35,7 +35,7 @@ namespace colections
                     {
                         if (!vocabulary.ContainsKey(words[j]))
                         { 
-                            Console.WriteLine($"The word {words[j]} isn`t in the dictionary. Please, enter the definition to continue ");
+                            Console.WriteLine($"The word \"{words[j]}\" isn`t in the dictionary. Please, enter the definition to continue ");
                             newWordDef=Console.ReadLine();
                             vocabulary[words[j]] = newWordDef;
                         }
@@ -50,6 +50,90 @@ namespace colections
 
 
     }
+     class productList
+    {
+        Dictionary<string, List<double>> receipt;
+        public productList(string fileNameMenu,string fileNamePrice)
+        {
+             receipt = new Dictionary<string, List<double>>();
+            if (File.Exists(fileNameMenu) && File.Exists(fileNamePrice))
+            {
+                
+                string[] lines = File.ReadAllLines(fileNameMenu);
+                string[] words;
+                double weightProduct;
+                for(int i = 0; i < lines.Length; ++i)
+                {
+                    words = lines[i].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (words.Length > 2)
+                    {
+                        Console.WriteLine($"The line {i} isn`t correct in the file {fileNameMenu}. This is missed for running program");
+                    }
+                    else if (words.Length == 2)
+                    {
+                        try
+                        {
+                            weightProduct = double.Parse(words[1]);
+                        }
+                        catch(ArgumentException ex) { throw; }
+                        if (receipt.ContainsKey(words[0]))
+                        {
+                            receipt[words[0]][0] += weightProduct;
+
+
+                        }
+                        else
+                        {
+                            receipt[words[0]] = new List<double>(2) { weightProduct,0 };
+                        }
+                    }
+                }
+
+                lines = File.ReadAllLines(fileNamePrice);
+                double costProduct;
+                for(int i = 0; i < lines.Length; ++i)
+                {
+                    words = lines[i].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (words.Length != 2)
+                    {
+                        Console.WriteLine($"The line {i} isn`t correct in the file {fileNamePrice}. This is missed for running program");
+                    }
+                    else if (words.Length == 2)
+                    {
+                        try
+                        {
+                            costProduct = double.Parse(words[1]);
+                        }
+                        catch (ArgumentException ex) { throw; }
+                        if (receipt.ContainsKey(words[0]))
+                        {
+                            receipt[words[0]][1] = costProduct * receipt[words[0]][0];
+
+
+                        }
+                       
+                    }
+                
+                }
+            }
+            else
+            {
+                throw new FileNotFoundException();
+            }
+
+            
+        }
+        public override string ToString()
+        {
+            StringBuilder text = new StringBuilder();
+            
+            foreach(KeyValuePair<string, List<double>> a in receipt)
+            {
+                text.Append($"{a.Key,-15} weight= {a.Value[0],-8} cost= {a.Value[1],-8}\n");
+            }
+            return text.ToString();
+        }
+    }
     class Program
     {
         static void Main(string[] args)
@@ -59,5 +143,17 @@ namespace colections
             changeWord.change(ref str);
             Console.WriteLine(str);
             }
+             try
+            {
+                productList product = new productList(@"menu.txt", 
+                    @"price.txt");
+                
+                Console.Write(product);
+            }
+            catch ( Exception exep)
+            {
+                Console.WriteLine(exep.Message);
+            }
+
          }
 }
