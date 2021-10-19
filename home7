@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace colections
-{
+{Класи з великої літери
     static class changeWord
     {
         static Dictionary<string, string> vocabulary;
+        Хардкод.
         static changeWord() {
             vocabulary = new Dictionary<string, string>();
             vocabulary.Add("I", "He");
@@ -16,6 +17,7 @@ namespace colections
             vocabulary.Add("to", "to");
             vocabulary.Add("school", "cinema");
         }
+        Чому через ref. Незручно
       public  static void change(ref string text)
         {
             string[] centences = text.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
@@ -51,7 +53,7 @@ namespace colections
 
     }
      class productList
-    {
+    {А назви продуктів де? 
         Dictionary<string, List<double>> receipt;
         public productList(string fileNameMenu,string fileNamePrice)
         {
